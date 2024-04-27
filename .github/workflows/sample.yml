@@ -38,8 +38,8 @@ jobs:
       - name: Generate logs with warnings
         run: |
           echo "This is a normal warning message."
-          echo "::warning file=app.js,line=20,col=5::This is a warning message."
-          echo "::set-output name=warning_output::A warning was generated in app.js at line 20, column 5."
+         # echo "::warning file=app.js,line=20,col=5::This is a warning message."
+          echo "warning_output=A warning was generated in app.js at line 20, column 5." >> $GITHUB_ENV
 
       #- name: Summarize Warning Logs
       #  run: |
