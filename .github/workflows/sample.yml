@@ -16,7 +16,7 @@ jobs:
       - name: Generate logs with warnings
         run: |
           echo "This is a normal warning message."
-          echo "::warning ::This is a warning message."
+          echo "::warning file=app.js,line=20,col=5::This is a warning message."
 
   log-notices:
     runs-on: ubuntu-latest
