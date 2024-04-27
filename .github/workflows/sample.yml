@@ -1,0 +1,27 @@
+name: Example Error and Warning Logging
+on: [push]
+
+jobs:
+  log-errors:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate logs with errors
+        run: |
+          echo "This is a normal log message."
+          echo "::error ::This is an error message."
+  
+  log-warnings:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate logs with warnings
+        run: |
+          echo "This is a normal warning message."
+          echo "::warning ::This is a warning message."
+
+  log-notices:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate logs with notices
+        run: |
+          echo "This is a normal notice message."
+          echo "::notice ::This is a notice message."
