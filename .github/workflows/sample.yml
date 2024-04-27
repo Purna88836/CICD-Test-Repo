@@ -32,15 +32,19 @@ jobs:
   log-warnings:
     runs-on: ubuntu-latest
     needs: log-errors
+    outputs:
+      warningMessage: ${{ steps.warning_step.outputs.warning_output }}
     steps:
       - name: Generate logs with warnings
         run: |
           echo "This is a normal warning message."
           echo "::warning file=app.js,line=20,col=5::This is a warning message."
-      - name: Summarize Warning Logs
-        run: |
-          echo '### Warning Summary' > $GITHUB_STEP_SUMMARY
-          echo 'A warning was generated in `app.js` at line 20, column 5.' >> $GITHUB_STEP_SUMMARY
+          echo "::set-output name=warning_output::A warning was generated in app.js at line 20, column 5."
+
+      #- name: Summarize Warning Logs
+      #  run: |
+      #    echo '### Warning Summary' > $GITHUB_STEP_SUMMARY
+      #    echo 'A warning was generated in `app.js` at line 20, column 5.' >> $GITHUB_STEP_SUMMARY
 
   log-notices:
     runs-on: ubuntu-latest
