@@ -2,10 +2,11 @@ name: Example Error and Warning Logging
 on:
   push:
     branches:
-      - main
+      - feature/*
   pull_request:
     branches:
       - main
+  
 
 jobs:
   log-errors:

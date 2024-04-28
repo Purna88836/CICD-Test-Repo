@@ -1,0 +1,41 @@
+name: Example Error and Warning Logging
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      feature_branch:
+        description: 'Feature branch to operate on'
+        required: true
+        default: 'main'
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'development'
+
+jobs:
+  log-errors:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate logs with errors
+        run: |
+          echo "This is a normal log message."
+
+  log-warning-test-step:
+    runs-on: ubuntu-latest
+    needs: log-errors
+    if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
+    steps:
+      - name: Generate logs with warnings
+        run: |
+          echo "This is a normal warning message."
+          echo "::warning file=app.js,line=20,col=5::This is a warning message."
+      - name: Summarize Warning Logs
+        run: |
+          echo '### Warning Summary' > $GITHUB_STEP_SUMMARY
+          echo 'A warning was generated in `app.js` at line 20, column 5.' >> $GITHUB_STEP_SUMMARY
