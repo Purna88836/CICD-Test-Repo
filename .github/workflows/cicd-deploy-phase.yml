@@ -33,7 +33,7 @@ jobs:
     needs: log-errors
     env:
       OWNER: 'Purna88836'
-      REPO: github.repository
+      REPO: ${{ github.repository }}
       WORKFLOW_NAME: 'cicd-deploy-phase.yml'
       PERSONAL_ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
     steps:
