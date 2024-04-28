@@ -37,6 +37,15 @@ jobs:
       WORKFLOW_NAME: 'cicd-deploy-test-workflow-dispatch'
       PERSONAL_ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
     steps:
+
+      - name: test-phase..
+        run: |
+          echo "$REPO"
+          curl_output=$(curl -s -H "Authorization: Bearer ${PERSONAL_ACCESS_TOKEN}" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/$REPO/actions/workflows")
+          echo "$curl_output"
+
       - name: Fetch the workflow ID by name
         id: get_workflow_id
         run: |
