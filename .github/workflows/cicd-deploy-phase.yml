@@ -1,4 +1,4 @@
-name: Example Error and Warning Logging
+name: cicd-deploy-test-workflow-dispatch
 
 on:
   push:
