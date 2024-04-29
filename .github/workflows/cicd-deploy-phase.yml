@@ -72,7 +72,13 @@ jobs:
         run: |
           curl -H "Authorization: Bearer ${{ secrets.PERSONAL_ACCESS_TOKEN }}" \
                -H "Accept: application/octet-stream" \
-               -L "$LOGS_URL" --output workflow-logs.zip
+               -L "$LOGS_URL" -o workflow-logs.zip
+
+      - name: Check Downloaded File
+        run: |
+          ls -lh workflow-logs.zip
+          file workflow-logs.zip
+          head -c 100 workflow-logs.zip | xxd
 
       - name: Unzip Logs
         run: |
