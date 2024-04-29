@@ -69,7 +69,7 @@ jobs:
               "https://api.github.com/repos/$REPO/actions/workflows/${{ steps.get_workflow_id.outputs.workflow_id }}/runs?event=workflow_dispatch&status=success&per_page=5&page=$page")
             
             echo "$response"
-            
+
             for run_id in $(echo "$response" | jq -r '.workflow_runs[].id'); do
               echo "Checking logs for run ID: $run_id"
               log_url=$(echo "$response" | jq -r --arg id "$run_id" '.workflow_runs[] | select(.id == ($id | tonumber)).logs_url')
@@ -108,8 +108,14 @@ jobs:
 
   log-warning-test-step:
     runs-on: ubuntu-latest
-    needs: fetch-feature-branch
     if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
+    env:
+      OWNER: 'Purna88836'
+      REPO: ${{ github.repository }}
+      WORKFLOW_NAME: 'cicd-deploy-test-workflow-dispatch'
+      PERSONAL_ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+      feature_branch_name: ${{ inputs.feature_branch }}
+      environment: ${{ inputs.environment }}
     steps:
       - name: Generate logs with warnings
         run: |
