@@ -36,6 +36,7 @@ jobs:
       REPO: ${{ github.repository }}
       WORKFLOW_NAME: 'cicd-deploy-test-workflow-dispatch'
       PERSONAL_ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+      feature_branch_name: ${{ inputs.feature_branch }}
     steps:
 
       - name: test-phase..
