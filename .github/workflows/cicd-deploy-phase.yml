@@ -99,6 +99,23 @@ jobs:
             echo "Contents of $dir:"
             cat "$dir"/*  # Adjust based on known file types or names
           done
+      
+      - name: Search for Inputs in Logs
+        run: |
+          echo "Searching for input patterns in log files..."
+          # Search for common input patterns or keywords
+          grep -Ri 'input' workflow-logs/
+
+      - name: Detailed Search and Display Results
+        run: |
+          # Detailed search within each specific log file for more clues
+          echo "Displaying occurrences of input-related data..."
+          for file in workflow-logs/*; do
+            if grep -iq 'input' "$file"; then
+              echo "Input related data found in $file:"
+              grep -i 'input' "$file"
+            fi
+          done
 
       - name: Use the workflow ID to fetch the latest successful run's feature branch
         run: |
