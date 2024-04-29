@@ -75,12 +75,6 @@ jobs:
                -H "X-GitHub-Api-Version: 2022-11-28" \
                -L "$LOGS_URL" -o workflow-logs.zip
 
-      - name: Check Downloaded File
-        run: |
-          ls -lh workflow-logs.zip
-          file workflow-logs.zip
-          head -c 100 workflow-logs.zip | xxd
-
       - name: Unzip Logs
         run: |
           if [ -f workflow-logs.zip ]; then
@@ -92,17 +86,18 @@ jobs:
             exit 1
           fi
 
-      - name: Display Log Files
+      - name: List Contents of Directories
         run: |
-          ls -l workflow-logs
+          echo "Listing contents of extracted directories:"
+          ls -R workflow-logs
 
-      - name: Sample Log Content
+      - name: Display Detailed Log Contents
         run: |
-          # Display the first few lines of each log file to understand the structure
-          for log_file in workflow-logs/*; do
-            echo "Contents of $log_file:"
-            head -10 "$log_file"
-            echo "..."
+          echo "Displaying detailed contents of specific log files:"
+          # Loop through directories and display content of specific files
+          for dir in workflow-logs/*/; do
+            echo "Contents of $dir:"
+            cat "$dir"/*  # Adjust based on known file types or names
           done
 
       - name: Use the workflow ID to fetch the latest successful run's feature branch
