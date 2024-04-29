@@ -70,9 +70,19 @@ jobs:
       
       - name: Download Logs
         run: |
-          curl -H "Authorization: Bearer ${{ secrets.PERSONAL_ACCESS_TOKEN }}" \
-               -H "Accept: application/octet-stream" \
-               -L "$LOGS_URL" -o workflow-logs.zip
+          curl -s -H "Authorization: Bearer ${{ secrets.PERSONAL_ACCESS_TOKEN }}" \
+               -H "Accept: application/json" \
+               -L "$LOGS_URL" --output logs.json
+
+          # Check if logs are downloaded and show the first part of the logs
+          if [ -f logs.json ]; then
+            echo "Logs downloaded successfully:"
+            head -n 10 logs.json
+            # Process JSON logs as needed
+          else
+            echo "Failed to download logs."
+            exit 1
+          fi
 
       - name: Check Downloaded File
         run: |
