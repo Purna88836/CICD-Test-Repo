@@ -75,9 +75,9 @@ jobs:
                    -L "$log_url" -o workflow-logs-$run_id.zip
               unzip "workflow-logs-$run_id.zip" -d "workflow-logs-$run_id"
               if grep -q 'environment: qc' workflow-logs-$run_id/*.txt; then
-                echo "Environment 'stage' found in run ID: $run_id"
-                feature_branch_name=$(grep 'feature_branch_name' workflow-logs-$run_id/*.txt | cut -d ':' -f2 | xargs)
-                echo "Feature branch name for 'stage': $feature_branch_name"
+                echo "Environment 'qc' found in run ID: $run_id"
+                feature_branch_name=$(grep 'feature_branch_name' workflow-logs-$run_id/*.txt | awk -F': ' '{print $2}' | xargs)
+                echo "Feature branch name for 'qc': $feature_branch_name"
                 found="true"
                 break
               fi
