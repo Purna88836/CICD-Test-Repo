@@ -58,77 +58,49 @@ jobs:
           echo "$workflow_id"
           echo "::set-output name=workflow_id::$workflow_id"
 
-      - name: test feature branch output.
+      - name: Fetch and Check Workflow Runs
         run: |
-          api_response=$(curl -s -H "Authorization: Bearer ${PERSONAL_ACCESS_TOKEN}" \
-            -H "Accept: application/vnd.github+json" \
-            "https://api.github.com/repos/$REPO/actions/workflows/${{ steps.get_workflow_id.outputs.workflow_id }}/runs?event=workflow_dispatch&status=success&per_page=100")
-           echo "Filtered API Response:"
-          logs_url=$(echo "$api_response" | jq -r '.workflow_runs[0].logs_url')
-
-          echo "LOGS_URL=$logs_url" >> $GITHUB_ENV
-          echo "Logs URL fetched and set: $logs_url"
-      
-      - name: Download Logs
-        run: |
-          curl -H "Authorization: Bearer ${{ secrets.PERSONAL_ACCESS_TOKEN }}" \
-               -H "Accept: application/vnd.github+json" \
-               -H "X-GitHub-Api-Version: 2022-11-28" \
-               -L "$LOGS_URL" -o workflow-logs.zip
-
-      - name: Unzip Logs
-        run: |
-          if [ -f workflow-logs.zip ]; then
-            unzip workflow-logs.zip -d workflow-logs
-            echo "Unzipped logs:"
-            ls -l workflow-logs
+          page=1
+          found=""
+          while [ -z "$found" ]; do
+            response=$(curl -s -H "Authorization: Bearer $PERSONAL_ACCESS_TOKEN" \
+              -H "Accept: application/vnd.github.v3+json" \
+              "https://api.github.com/repos/$REPO/actions/workflows/${{ steps.get_workflow_id.outputs.workflow_id }}/runs?event=workflow_dispatch&status=success&per_page=5&page=$page")
+            for run_id in $(echo "$response" | jq -r '.workflow_runs[].id'); do
+              echo "Checking logs for run ID: $run_id"
+              log_url=$(echo "$response" | jq -r --arg id "$run_id" '.workflow_runs[] | select(.id == ($id | tonumber)).logs_url')
+              curl -H "Authorization: Bearer $PERSONAL_ACCESS_TOKEN" \
+                   -H "Accept: application/octet-stream" \
+                   -L "$log_url" --output "workflow-logs-$run_id.zip"
+              unzip "workflow-logs-$run_id.zip" -d "workflow-logs-$run_id"
+              if grep -q 'environment: stage' workflow-logs-$run_id/*.txt; then
+                echo "Environment 'stage' found in run ID: $run_id"
+                feature_branch_name=$(grep 'feature_branch_name' workflow-logs-$run_id/*.txt | cut -d ':' -f2 | xargs)
+                echo "Feature branch name for 'stage': $feature_branch_name"
+                found="true"
+                break
+              fi
+              rm -rf "workflow-logs-$run_id" "workflow-logs-$run_id.zip" # Clean up if not the right environment
+            done
+            if [ -z "$found" ]; then
+              ((page++))
+              echo "No 'stage' environment found on page $page. Checking next page..."
+            else
+              break
+            fi
+          done
+          if [ -n "$feature_branch_name" ]; then
+            echo "FEATURE_BRANCH_NAME=$feature_branch_name" >> $GITHUB_ENV
           else
-            echo "Failed to download or find workflow-logs.zip"
+            echo "Failed to find a workflow run with the 'stage' environment."
             exit 1
           fi
 
-      - name: List Contents of Directories
+      - name: Use the Feature Branch
+        if: env.FEATURE_BRANCH_NAME
         run: |
-          echo "Listing contents of extracted directories:"
-          ls -R workflow-logs
-
-      - name: Display Detailed Log Contents
-        run: |
-          echo "Displaying detailed contents of specific log files:"
-          # Loop through directories and display content of specific files
-          for dir in workflow-logs/*/; do
-            echo "Contents of $dir:"
-            cat "$dir"/*  # Adjust based on known file types or names
-          done
-      
-      - name: Search for Inputs in Logs
-        run: |
-          echo "Searching for input patterns in log files..."
-          # Search for common input patterns or keywords
-          grep -Ri 'feature_branch_name' workflow-logs/
-
-      - name: Detailed Search and Display Results
-        run: |
-          # Detailed search within each specific log file for more clues
-          echo "Displaying occurrences of input-related data..."
-          for file in workflow-logs/*; do
-            if grep -iq 'feature_branch_name' "$file"; then
-              echo "Input related data found in $file:"
-              grep -i 'feature_branch_name' "$file"
-            fi
-          done
-
-      - name: Use the workflow ID to fetch the latest successful run's feature branch
-        run: |
-          feature_branch=$(curl -s -H "Authorization: Bearer ${PERSONAL_ACCESS_TOKEN}" \
-            -H "Accept: application/vnd.github+json" \
-            "https://api.github.com/repos/$REPO/actions/workflows/${{ steps.get_workflow_id.outputs.workflow_id }}/runs?event=workflow_dispatch&status=success&per_page=100" | \
-            jq -r --arg environment "${{ github.event.inputs.environment }}" \
-              '.workflow_runs | 
-              map(select(.conclusion == "success" and .inputs.environment == $environment)) | 
-              sort_by(.created_at) | reverse | 
-              .[0].inputs.feature_branch')
-          echo "Feature branch of the last successful run: $feature_branch"
+          echo "Using feature branch: ${{ env.FEATURE_BRANCH_NAME }}"
+          # Further actions using the feature branch can be performed here
 
   log-warning-test-step:
     runs-on: ubuntu-latest
