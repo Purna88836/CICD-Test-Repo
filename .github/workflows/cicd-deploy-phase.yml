@@ -82,7 +82,14 @@ jobs:
 
       - name: Unzip Logs
         run: |
-          unzip workflow-logs.zip -d workflow-logs
+          if [ -f workflow-logs.zip ]; then
+            unzip workflow-logs.zip -d workflow-logs
+            echo "Unzipped logs:"
+            ls -l workflow-logs
+          else
+            echo "Failed to download or find workflow-logs.zip"
+            exit 1
+          fi
 
       - name: Display Log Files
         run: |
