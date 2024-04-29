@@ -70,8 +70,8 @@ jobs:
               echo "Checking logs for run ID: $run_id"
               log_url=$(echo "$response" | jq -r --arg id "$run_id" '.workflow_runs[] | select(.id == ($id | tonumber)).logs_url')
               curl -H "Authorization: Bearer $PERSONAL_ACCESS_TOKEN" \
-                   -H "Accept: application/octet-stream" \
-                   -L "$log_url" --output "workflow-logs-$run_id.zip"
+                   -H "Accept: application/vnd.github+json" \
+                   -L "$log_url" -o workflow-logs-$run_id.zip
               unzip "workflow-logs-$run_id.zip" -d "workflow-logs-$run_id"
               if grep -q 'environment: stage' workflow-logs-$run_id/*.txt; then
                 echo "Environment 'stage' found in run ID: $run_id"
