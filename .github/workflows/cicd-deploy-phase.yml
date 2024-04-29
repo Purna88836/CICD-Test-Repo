@@ -73,7 +73,6 @@ jobs:
             fi
       
       - name: Download Logs
-        if: steps.get_logs_url.outputs.logs_url
         run: |
           curl -H "Authorization: Bearer ${{ secrets.PERSONAL_ACCESS_TOKEN }}" \
                -H "Accept: application/octet-stream" \
