@@ -63,20 +63,16 @@ jobs:
             -H "Accept: application/vnd.github+json" \
             "https://api.github.com/repos/$REPO/actions/workflows/${{ steps.get_workflow_id.outputs.workflow_id }}/runs?event=workflow_dispatch&status=success&per_page=100")
            echo "Filtered API Response:"
-           logs_url=$(echo "$api_response" | jq -r '.workflow_runs[0].logs_url')
+          logs_url=$(echo "$api_response" | jq -r '.workflow_runs[0].logs_url')
 
-            if [[ "$logs_url" == "null" || -z "$logs_url" ]]; then
-              echo "No logs URL found for the latest successful run."
-              exit 1
-            else
-              echo "::set-output name=logs_url::$logs_url"
-            fi
+          echo "LOGS_URL=$logs_url" >> $GITHUB_ENV
+          echo "Logs URL fetched and set: $logs_url"
       
       - name: Download Logs
         run: |
           curl -H "Authorization: Bearer ${{ secrets.PERSONAL_ACCESS_TOKEN }}" \
                -H "Accept: application/octet-stream" \
-               -L "${{ steps.get_logs_url.outputs.logs_url }}" --output workflow-logs.zip
+               -L "$LOGS_URL" --output workflow-logs.zip
 
       - name: Unzip Logs
         run: |
